@@ -1,0 +1,13 @@
+{
+    "norm_constraint": 10,
+    "layer1":
+    {
+	"linear.layers": 4,
+	"linear.neurons": 2048
+    },
+    "layer2":
+    {
+	"linear.layers": 2,
+	"linear.neurons": 10
+    },
+}
