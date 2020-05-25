@@ -11,11 +11,11 @@ Dataset and Device Info
 * **CPU**: 4, 30.5 GiB
 * **logs and model**: `here`_
 
-======================
-Hyperparameters Tuning
-======================
+===================
+Accuracies and Loss
+===================
 
-For complete tuning check ``hyper-tuning.rst`` file.
+For complete hyperparameter tuning check ``hyper-tuning.rst`` file.
 
 * Learning rate: 0.005
 
