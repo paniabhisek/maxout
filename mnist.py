@@ -158,6 +158,47 @@ class BenchMarkMNIST:
         self.logger.info('Validation | Time: %.4fs Accuracy: %.4f Loss: %.4f',
                          running_time, acc, running_loss)
 
+    def test(self, batch_step):
+        """
+        Evaluate on mnist test datasets.
+
+        :param batch_step: batch size
+        :type batch_step: :py:obj:`int`
+        """
+        test_data = self.testset.test_data.to(device)
+        test_labels = self.testset.test_labels.to(device)
+        running_loss = 0
+        running_time, elapsed = 0, 0
+        acc = 0
+        test_size = 10000
+        for batch_i in range(0, test_size, batch_step):
+            # get input data for current batch
+            test_batch = test_data[batch_i:min(batch_i+batch_step, test_size)]
+            label_batch = test_labels[batch_i:min(batch_i+batch_step, test_size)]
+
+            test_batch = test_batch.view((test_batch.size()[0], -1)).float()
+
+            self.optimizer.zero_grad()
+
+            # forward
+            elapsed, outputs = total(self.net, test_batch, is_train=False, _reps=1)
+            running_time += elapsed
+            elapsed, loss = total(self.loss, outputs, label_batch, _reps=1)
+            running_time += elapsed
+
+            _acc = num_corrects(outputs, label_batch)
+            acc += _acc
+
+            _loss = loss.item()
+            running_loss += _loss
+            if batch_i != 0 and batch_i % self.LOGGING_MOD == 0:
+                self.logger.info('Batch: %d | Accuracy: %.4f Loss: %.4f',
+                                 batch_i, _acc / test_batch.size()[0], _loss)
+        running_loss /= test_size // batch_step + 1
+        acc /= test_size
+        self.logger.info('Test | Time: %.4fs Accuracy: %.4f Loss: %.4f',
+                         running_time, acc, running_loss)
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -165,6 +206,7 @@ if __name__ == '__main__':
     parser.add_argument('--train', help='Train the model with maxout layer')
     parser.add_argument('--valid', help='Validate the model with maxout layer')
     parser.add_argument('--train_cont', help='Continue training the model with whole training data')
+    parser.add_argument('--test', help='Test the model with maxout layer')
     args = parser.parse_args()
 
     benchmark = BenchMarkMNIST()
@@ -178,3 +220,6 @@ if __name__ == '__main__':
         benchmark.net.load_state_dict(torch.load('./MaxoutMNIST.pth'))
         benchmark.train(60000, 64, 5)
         torch.save(benchmark.net.state_dict(), './MaxoutMNIST.pth')
+    if args.test == 'true':
+        benchmark.net.load_state_dict(torch.load('./MaxoutMNIST.pth'))
+        benchmark.test(64)
