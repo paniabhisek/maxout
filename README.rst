@@ -11,6 +11,10 @@ Dataset and Device Info
 * **CPU**: 4, 30.5 GiB
 * **logs and model**: `here`_
 
+The following diagram shows the maxout module with multilayer perceptrons.
+
+.. image:: maxout-mlp.png
+
 ===================
 Accuracies and Loss
 ===================
