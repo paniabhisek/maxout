@@ -7,7 +7,7 @@ import torchvision
 import numpy as np
 
 # Local library modules
-from model import MaxoutMNIST
+from model import MaxoutMLPMNIST
 from logs import get_logger
 from utils import *
 from timer import total
@@ -27,7 +27,7 @@ class BenchMarkMNIST:
         self.testset = torchvision.datasets.MNIST(root='./data', train=False,
                                                   download=True)
 
-        self.net = MaxoutMNIST().to(device)
+        self.net = MaxoutMLPMNIST().to(device)
 
         self.optimizer = torch.optim.SGD(self.net.parameters(), lr=0.005,
                                          momentum=0.9)
@@ -212,14 +212,14 @@ if __name__ == '__main__':
     benchmark = BenchMarkMNIST()
     if args.train == 'true':
         benchmark.train(50000, 64, 5)
-        torch.save(benchmark.net.state_dict(), './MaxoutMNIST.pth')
+        torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
     if args.valid == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMNIST.pth'))
+        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
         benchmark.validate(64)
     if args.train_cont == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMNIST.pth'))
+        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
         benchmark.train(60000, 64, 5)
-        torch.save(benchmark.net.state_dict(), './MaxoutMNIST.pth')
+        torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
     if args.test == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMNIST.pth'))
+        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
         benchmark.test(64)

@@ -10,7 +10,7 @@ import torch
 # Local Library modules
 from utils import *
 
-class Maxout(torch.nn.Module):
+class MaxoutMLP(torch.nn.Module):
     """Maxout using Multilayer Perceptron"""
 
     def __init__(self, input_size,
@@ -28,7 +28,7 @@ class Maxout(torch.nn.Module):
                                layer before max operation
         :type linear_neurons: :py:obj:`int`
         """
-        super(Maxout, self).__init__()
+        super(MaxoutMLP, self).__init__()
 
         # initialize variables
         self.input_size = input_size

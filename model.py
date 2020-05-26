@@ -12,10 +12,10 @@ import json
 import torch
 
 # local library modules
-from maxout import Maxout
+from maxout import MaxoutMLP
 from utils import *
 
-class MaxoutMNIST(torch.nn.Module):
+class MaxoutMLPMNIST(torch.nn.Module):
     """MLP + dropout"""
 
     def __init__(self, input_dim=784):
@@ -29,7 +29,7 @@ class MaxoutMNIST(torch.nn.Module):
                           to create `1d` pixels.
         :type input_dim: :py:obj:`int`
         """
-        super(MaxoutMNIST, self).__init__()
+        super(MaxoutMLPMNIST, self).__init__()
 
         # parameters initialization
         self.hparams = None
@@ -43,12 +43,12 @@ class MaxoutMNIST(torch.nn.Module):
                            fill_(self.hparams['norm_constraint']).to(device)
 
         # Maxout Layer 1 (input_size, num_layers, num_neurons)
-        self.maxout1 = Maxout(input_dim,
+        self.maxout1 = MaxoutMLP(input_dim,
                               self.hparams['layer1']['linear.layers'],
                               self.hparams['layer1']['linear.neurons']).to(device)
 
         # Maxout Layer 2 (input_size, num_layers, num_neurons)
-        self.maxout2 = Maxout(self.hparams['layer1']['linear.neurons'],
+        self.maxout2 = MaxoutMLP(self.hparams['layer1']['linear.neurons'],
                               self.hparams['layer2']['linear.layers'],
                               self.hparams['layer2']['linear.neurons']).to(device)
 
