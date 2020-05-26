@@ -9,5 +9,5 @@
     {
 	"linear.layers": 2,
 	"linear.neurons": 10
-    },
+    }
 }
