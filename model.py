@@ -36,21 +36,21 @@ class MaxoutMLPMNIST(torch.nn.Module):
         self.init_hyper_params()
 
         # dummy tensors for upper bound after norm
-        self.norm_upper1 = torch.empty(self.hparams['layer1']['linear.neurons']).\
+        self.norm_upper1 = torch.empty(self.hparams['mlp'][0]['neurons']).\
                            fill_(self.hparams['norm_constraint']).to(device)
 
-        self.norm_upper2 = torch.empty(self.hparams['layer2']['linear.neurons']).\
+        self.norm_upper2 = torch.empty(self.hparams['mlp'][1]['neurons']).\
                            fill_(self.hparams['norm_constraint']).to(device)
 
         # Maxout Layer 1 (input_size, num_layers, num_neurons)
         self.maxout1 = MaxoutMLP(input_dim,
-                              self.hparams['layer1']['linear.layers'],
-                              self.hparams['layer1']['linear.neurons']).to(device)
+                                 self.hparams['mlp'][0]['layers'],
+                                 self.hparams['mlp'][0]['neurons']).to(device)
 
         # Maxout Layer 2 (input_size, num_layers, num_neurons)
-        self.maxout2 = MaxoutMLP(self.hparams['layer1']['linear.neurons'],
-                              self.hparams['layer2']['linear.layers'],
-                              self.hparams['layer2']['linear.neurons']).to(device)
+        self.maxout2 = MaxoutMLP(self.hparams['mlp'][0]['neurons'],
+                                 self.hparams['mlp'][1]['layers'],
+                                 self.hparams['mlp'][1]['neurons']).to(device)
 
     def forward(self, input_imgs, is_train=True):
         """
