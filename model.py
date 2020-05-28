@@ -13,7 +13,10 @@ import torch
 
 # local library modules
 from maxout import MaxoutMLP
-from utils import *
+from maxout import MaxoutConv
+from utils import init_hyper_params
+from utils import num_corrects
+from utils import device
 
 class MaxoutMLPMNIST(torch.nn.Module):
     """MLP + dropout"""
@@ -32,8 +35,7 @@ class MaxoutMLPMNIST(torch.nn.Module):
         super(MaxoutMLPMNIST, self).__init__()
 
         # parameters initialization
-        self.hparams = None
-        self.init_hyper_params()
+        self.hparams = init_hyper_params()
 
         # dummy tensors for upper bound after norm
         self.norm_upper1 = torch.empty(self.hparams['mlp'][0]['neurons']).\
@@ -84,12 +86,68 @@ class MaxoutMLPMNIST(torch.nn.Module):
 
         return softmax
 
-    def init_hyper_params(self):
+class MaxoutConvMNIST(torch.nn.Module):
+    def __init__(self, in_channels=1):
         """
-        Initialize hyper parameters.
+        Define Maxout, Maxpool and Linear Layers for the model
 
-        Stores number of neurons in each layer
-        and number of layers before max operation
+        :param in_channels: Number of channel of input image
+        :type in_channels: :py:obj:`int`
         """
-        with open('maxout.json', 'r') as f:
-            self.hparams = json.load(f)
+        super(MaxoutConvMNIST, self).__init__()
+
+        # parameters initialization
+        self.hparams = init_hyper_params()
+
+        # Maxout Layer 1 (in_channels, out_channels, kernel)
+        self.maxout1 = MaxoutConv(in_channels=in_channels,
+                                  out_channels=self.hparams['conv'][0]['channels'],
+                                  kernel_size=self.hparams['conv'][0]['kernel'],
+                                  padding=self.hparams['padding'][0]).to(device)
+        self.maxpool1 = torch.nn.MaxPool2d(self.hparams['pool'][0],
+                                           self.hparams['stride'][0])
+
+        # Maxout Layer 2 (in_channels, out_channels, kernel)
+        self.maxout2 = MaxoutConv(in_channels=1,
+                                  out_channels=self.hparams['conv'][1]['channels'],
+                                  kernel_size=self.hparams['conv'][1]['kernel'],
+                                  padding=self.hparams['padding'][1]).to(device)
+        self.maxpool2 = torch.nn.MaxPool2d(self.hparams['pool'][1],
+                                           self.hparams['stride'][1])
+
+        # Maxout Layer 3 (in_channels, out_channels, kernel)
+        self.maxout3 = MaxoutConv(in_channels=1,
+                                  out_channels=self.hparams['conv'][2]['channels'],
+                                  kernel_size=self.hparams['conv'][2]['kernel'],
+                                  padding=self.hparams['padding'][2]).to(device)
+        self.maxpool3 = torch.nn.MaxPool2d(self.hparams['pool'][2],
+                                           self.hparams['stride'][2])
+
+        self.linear = torch.nn.Linear(self.hparams['linear']['in_channels'],
+                                      self.hparams['linear']['out_channels'])
+
+    def forward(self, _input):
+        """
+        Pass the input to the whole model
+
+        :param _input: input image
+        :type _input: :py:class:`torch.Tensor`
+        """
+        # Maxout1 + Maxpool1
+        out = self.maxout1(_input, is_norm=True)
+        out = self.maxpool1(out)
+
+        # Maxout2 + Maxpool2
+        out = self.maxout2(out, is_norm=True)
+        out = self.maxpool2(out)
+
+        # Maxout3 + Maxpool3
+        out = self.maxout3(out, is_norm=True)
+        out = self.maxpool3(out)
+
+        out = out.view(out.shape[0], -1)
+
+        # linear
+        out = self.linear(out)
+
+        return torch.nn.Softmax()(out)
