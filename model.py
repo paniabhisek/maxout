@@ -126,7 +126,7 @@ class MaxoutConvMNIST(torch.nn.Module):
         self.linear = torch.nn.Linear(self.hparams['linear']['in_channels'],
                                       self.hparams['linear']['out_channels'])
 
-    def forward(self, _input):
+    def forward(self, _input, is_train=True):
         """
         Pass the input to the whole model
 
