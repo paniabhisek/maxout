@@ -59,6 +59,20 @@ class BenchMark:
         self.logger.info(device)
         self.LOGGING_MOD = 100
 
+    def reshape_data(self, data):
+        """
+        Reshape the data to appropriate size according to mlp or conv
+
+        :param data: Either train data or test data
+        :type data: :py:obj:`data`
+        """
+        if self.layer_type == 'mlp':
+            # convert 28 x 28 to 784 images
+            return data.view((data.size()[0], -1)).float()
+        elif self.layer_type == 'conv':
+            # reshape to (batch size, 1, height, width)
+            return data.view(*([data.size()[0]] + [1] +
+                               list(data.size()[1:]))).float()
     def train(self, train_size, batch_step, epochs, is_train_cont=False):
         """
         Train on first :py:obj:`train_size` mnist train datasets.
@@ -87,6 +101,7 @@ class BenchMark:
         :type epochs: :py:obj:`int`
         """
         train_data = self.trainset.train_data.to(device)
+        train_data = self.reshape_data(train_data)
         train_labels = self.trainset.train_labels.to(device)
         for epoch in range(epochs):
             running_loss, training_loss = 0, 0
@@ -99,9 +114,6 @@ class BenchMark:
                 train_batch = train_data[batch_i:min(batch_i+batch_step, train_size)]
                 label_batch = train_labels[batch_i:min(batch_i+batch_step, train_size)]
                 examples += train_batch.size()[0]
-
-                # convert 28 x 28 to 784 images
-                train_batch = train_batch.view((train_batch.size()[0], -1)).float()
 
                 self.optimizer.zero_grad()
 
@@ -149,6 +161,7 @@ class BenchMark:
         :type batch_step: :py:obj:`int`
         """
         train_data = self.trainset.train_data.to(device)
+        train_data = self.reshape_data(train_data)
         train_labels = self.trainset.train_labels.to(device)
         running_loss = 0
         running_time, elapsed = 0, 0
@@ -158,8 +171,6 @@ class BenchMark:
             # get input data for current batch
             val_batch = train_data[batch_i:min(batch_i+batch_step, 50000+val_size)]
             label_batch = train_labels[batch_i:min(batch_i+batch_step, 50000+val_size)]
-
-            val_batch = val_batch.view((val_batch.size()[0], -1)).float()
 
             self.optimizer.zero_grad()
 
@@ -190,6 +201,7 @@ class BenchMark:
         :type batch_step: :py:obj:`int`
         """
         test_data = self.testset.test_data.to(device)
+        test_data = self.reshape_data(test_data)
         test_labels = self.testset.test_labels.to(device)
         running_loss = 0
         running_time, elapsed = 0, 0
@@ -199,8 +211,6 @@ class BenchMark:
             # get input data for current batch
             test_batch = test_data[batch_i:min(batch_i+batch_step, test_size)]
             label_batch = test_labels[batch_i:min(batch_i+batch_step, test_size)]
-
-            test_batch = test_batch.view((test_batch.size()[0], -1)).float()
 
             self.optimizer.zero_grad()
 
