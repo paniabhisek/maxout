@@ -8,7 +8,9 @@ import json
 import torch
 
 # Local Library modules
-from utils import *
+from utils import init_hyper_params
+from utils import num_corrects
+from utils import device
 
 class MaxoutMLP(torch.nn.Module):
     """Maxout using Multilayer Perceptron"""
@@ -74,4 +76,44 @@ class MaxoutMLP(torch.nn.Module):
                 h = z
             else:
                 h = torch.max(h, z)
+        return h
+
+class MaxoutConv(torch.nn.Module):
+    """Maxout layer with convolution"""
+
+    def __init__(self, in_channels,
+                 out_channels, kernel_size, padding):
+        """
+        Define layers of maxout unit
+
+        :param in_channels: number of channel of input convolution
+        :type in_channels: :py:obj:`int`
+        :param out_channels: number of channel of output convolution
+        :type out_channels: :py:obj:`int`
+        :param kernel_size: size of the weight matrix to convolve
+        :type kernel_size: (:py:obj:`int`, :py:obj:`int`)
+        """
+        super(MaxoutConv, self).__init__()
+
+        self.conv = torch.nn.Conv2d(in_channels, out_channels, kernel_size,
+                                    padding=padding)
+
+        self.BN = torch.nn.BatchNorm2d(out_channels)
+
+    def forward(self, _input, is_norm=False):
+        """
+        Pass the input to the maxout layer
+
+        :param _input: input to the maxout layer
+                       input is expected to have channel dimension
+        :type _input: :py:class:`torch.Tensor`
+        """
+        z = self.conv(_input)
+        if is_norm:
+            z = self.BN(z)
+        # (batch size, channels, height, width)
+        h = torch.max(z, 1).values     # take max operation from first dimension(channel)
+        # Insert 1 as channel dimension to h
+        hshape = h.shape
+        h = h.reshape(*([hshape[0]] + [1] + list(hshape[1:])))
         return h

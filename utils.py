@@ -1,4 +1,5 @@
 import torch
+import json
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -15,6 +16,18 @@ def num_corrects(outputs, label_batch):
     out = outputs.argmax(1)
     corrects = out == label_batch
     return torch.sum(corrects).item()
+
+def init_hyper_params():
+    """
+    Initialize hyper parameters.
+
+    Stores number of neurons in each layer
+    and number of layers before max operation for mlp
+    Stores number of channels and kernel for
+    each maxout layer
+    """
+    with open('maxout.json', 'r') as f:
+        return json.load(f)
 
 def gcd(a, b):
     while b:
