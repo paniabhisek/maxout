@@ -11,7 +11,9 @@ from model import MaxoutMLPMNIST
 from model import MaxoutConvMNIST
 from logs import get_logger
 from utils import init_hyper_params
+from utils import num_corrects
 from utils import device
+from utils import lcm
 from timer import total
 
 class BenchMark:
