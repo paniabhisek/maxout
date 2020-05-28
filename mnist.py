@@ -73,6 +73,18 @@ class BenchMark:
             # reshape to (batch size, 1, height, width)
             return data.view(*([data.size()[0]] + [1] +
                                list(data.size()[1:]))).float()
+
+    def lr_update(self, _lr):
+        """
+        Create optimizer with updated learning rate
+
+        :param _lr: new learning rate
+        :type _lr: :py:const:`_lr`
+        """
+        self.optimizer = torch.optim.SGD(self.net.parameters(),
+                                         lr=_lr,
+                                         momentum=0.9)
+
     def train(self, train_size, batch_step, epochs, is_train_cont=False):
         """
         Train on first :py:obj:`train_size` mnist train datasets.
@@ -109,6 +121,12 @@ class BenchMark:
             training_acc, acc, _acc = 0, 0, 0
             examples = 0
             print_count = lcm(self.LOGGING_MOD, batch_step) // batch_step
+            if epoch == 5 and self.layer_type == 'conv' and not is_train_cont:
+                self.lr_update(0.005)
+            elif epoch == 0 and is_train_cont and self.layer_type == 'conv':
+                self.lr_update(0.001)
+            elif epoch == 5 and is_train_cont and self.layer_type == 'conv':
+                self.lr_update(0.0005)
             for batch_i in range(0, train_size, batch_step):
                 # get input data for current batch
                 train_batch = train_data[batch_i:min(batch_i+batch_step, train_size)]
