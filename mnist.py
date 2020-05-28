@@ -113,8 +113,12 @@ class BenchMark:
         :type epochs: :py:obj:`int`
         """
         train_data = self.trainset.train_data.to(device)
+        # shuffle data to account for permutation invariant
+        idx = torch.randperm(train_size)
+        train_data = train_data[idx]
         train_data = self.reshape_data(train_data)
         train_labels = self.trainset.train_labels.to(device)
+        train_labels = train_labels[idx]
         for epoch in range(epochs):
             running_loss, training_loss = 0, 0
             running_time, elapsed = 0, 0
