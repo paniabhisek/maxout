@@ -15,3 +15,11 @@ def num_corrects(outputs, label_batch):
     out = outputs.argmax(1)
     corrects = out == label_batch
     return torch.sum(corrects).item()
+
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def lcm(a, b):
+    return (a * b) // gcd(a, b)

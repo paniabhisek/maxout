@@ -70,7 +70,8 @@ class BenchMarkMNIST:
             running_time, elapsed = 0, 0
             training_acc, acc, _acc = 0, 0, 0
             examples = 0
-            for batch_num, batch_i in enumerate(range(0, train_size, batch_step)):
+            print_count = lcm(self.LOGGING_MOD, batch_step) // batch_step
+            for batch_i in range(0, train_size, batch_step):
                 # get input data for current batch
                 train_batch = train_data[batch_i:min(batch_i+batch_step, train_size)]
                 label_batch = train_labels[batch_i:min(batch_i+batch_step, train_size)]
@@ -102,9 +103,9 @@ class BenchMarkMNIST:
                 if batch_i != 0 and batch_i % self.LOGGING_MOD == 0:
                     self.logger.info('Training Epoch: %d | Time: %.4fs Avg time: %.4fs '
                                      'Batch: %d Accuracy: %.2f Loss: %.4f',
-                                     epoch, running_time, running_time / batch_num,
+                                     epoch, running_time, running_time / print_count,
                                      batch_i, acc * 100. / examples,
-                                     running_loss / batch_num)
+                                     running_loss / print_count)
                     # reinitialize variables
                     running_time = 0
                     acc = 0
