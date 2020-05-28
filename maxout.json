@@ -10,5 +10,38 @@
 	    "layers": 2,
 	    "neurons": 10
 	}
-    ]
+    ],
+    "conv":
+    [
+	{
+	    "channels": 5,
+	    "kernel": [7, 7]
+	},
+	{
+	    "channels": 4,
+	    "kernel": [5, 5]
+	},
+	{
+	    "channels": 4,
+	    "kernel": [5, 5]
+	}
+    ],
+    "pool":
+    [
+	[2, 2],
+	[2, 2],
+	[2, 2]
+    ],
+    "stride": [1, 1, 1],
+    "padding": [3, 2, 2],
+    "linear":
+    {
+	"in_channels": 625,
+	"out_channels": 10
+    },
+    "lr":
+    {
+	"mlp": 0.005,
+	"conv": 0.01
+    }
 }
