@@ -8,35 +8,58 @@ import numpy as np
 
 # Local library modules
 from model import MaxoutMLPMNIST
+from model import MaxoutConvMNIST
 from logs import get_logger
-from utils import *
+from utils import init_hyper_params
+from utils import device
 from timer import total
 
-class BenchMarkMNIST:
-    def __init__(self):
+class BenchMark:
+    def __init__(self, layer_type):
         """
         Initialize dataset benchmark objects
 
         Initialize training and test data.
         Create the model and optimizer
+
+        :param layer_type: Type of the layer;
+                           Multilayer perceptron or Convolution
+                           The value for this can be: mlp or conv
+        :type layer_type: :py:obj:`str`
         """
+        self.layer_type = layer_type
+
+        # loss
         self.loss = torch.nn.CrossEntropyLoss()
 
+        # dataset initialization
         self.trainset = torchvision.datasets.MNIST(root='./data', train=True,
                                                    download=True)
         self.testset = torchvision.datasets.MNIST(root='./data', train=False,
                                                   download=True)
 
-        self.net = MaxoutMLPMNIST().to(device)
+        # parameters initialization
+        self.hparams = init_hyper_params()
 
-        self.optimizer = torch.optim.SGD(self.net.parameters(), lr=0.005,
-                                         momentum=0.9)
+        # layer specific initialization
+        self.net = None
+        self.optimizer = None
+        if layer_type == 'mlp':
+            self.net = MaxoutMLPMNIST().to(device)
+            self.optimizer = torch.optim.SGD(self.net.parameters(),
+                                             lr=self.hparams['lr']['mlp'],
+                                             momentum=0.9)
+        elif layer_type == 'conv':
+            self.net = MaxoutConvMNIST().to(device)
+            self.optimizer = torch.optim.SGD(self.net.parameters(),
+                                             lr=self.hparams['lr']['conv'],
+                                             momentum=0.9)
 
         self.logger = get_logger()
         self.logger.info(device)
         self.LOGGING_MOD = 100
 
-    def train(self, train_size, batch_step, epochs):
+    def train(self, train_size, batch_step, epochs, is_train_cont=False):
         """
         Train on first :py:obj:`train_size` mnist train datasets.
 
@@ -208,19 +231,39 @@ if __name__ == '__main__':
     parser.add_argument('--valid', help='Validate the model with maxout layer')
     parser.add_argument('--train_cont', help='Continue training the model with whole training data')
     parser.add_argument('--test', help='Test the model with maxout layer')
+    parser.add_argument('--mlp', type=int, default=0,
+                        help='Instruct to use Multilayer Perceptron in maxout')
+    parser.add_argument('--conv', type=int, default=0,
+                        help='Instruct to use Convolution in maxout')
     args = parser.parse_args()
 
-    benchmark = BenchMarkMNIST()
-    if args.train == 'true':
-        benchmark.train(50000, 64, 5)
-        torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
-    if args.valid == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
-        benchmark.validate(64)
-    if args.train_cont == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
-        benchmark.train(60000, 64, 5)
-        torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
-    if args.test == 'true':
-        benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
-        benchmark.test(64)
+    if args.mlp:
+        benchmark = BenchMark('mlp')
+        if args.train == 'true':
+            benchmark.train(50000, 64, 5)
+            torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
+        if args.valid == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
+            benchmark.validate(64)
+        if args.train_cont == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
+            benchmark.train(60000, 64, 5)
+            torch.save(benchmark.net.state_dict(), './MaxoutMLPMNIST.pth')
+        if args.test == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutMLPMNIST.pth'))
+            benchmark.test(64)
+    if args.conv:
+        benchmark = BenchMark('conv')
+        if args.train == 'true':
+            benchmark.train(50000, 64, 10)
+            torch.save(benchmark.net.state_dict(), './MaxoutConvMNIST.pth')
+        if args.valid == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutConvMNIST.pth'))
+            benchmark.validate(64)
+        if args.train_cont == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutConvMNIST.pth'))
+            benchmark.train(60000, 64, 10, True)
+            torch.save(benchmark.net.state_dict(), './MaxoutConvMNIST.pth')
+        if args.test == 'true':
+            benchmark.net.load_state_dict(torch.load('./MaxoutConvMNIST.pth'))
+            benchmark.test(64)
