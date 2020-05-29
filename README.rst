@@ -95,6 +95,8 @@ Testing
 3 Conv + MLP
 ============
 
+.. image:: maxout-conv.png
+
 ^^^^^^^^^^
 How to Run
 ^^^^^^^^^^
