@@ -19,10 +19,6 @@ The following diagram shows the maxout module with multilayer perceptrons.
 MLP + Dropout
 =============
 
-For complete hyperparameter tuning check ``hyper-tuning.rst`` file.
-
-* Learning rate: 0.005
-
 ^^^^^^^^^^
 How to Run
 ^^^^^^^^^^
@@ -31,6 +27,10 @@ How to Run
 * **Validation**: *(remaining 10000 training data)* - python mnist.py --mlp 1 --valid true
 * **Train Continuation**: *(whole train data, continue from previous training)* - python mnist.py --mlp 1 --train_cont true
 * **Testing**: python mnist.py --mlp 1 --test true
+
+For complete hyperparameter tuning check ``hyper-tuning.rst`` file.
+
+* Learning rate: 0.005
 
 --------
 Training
@@ -103,6 +103,14 @@ How to Run
 * **Validation**: *(remaining 10000 training data)* - python mnist.py --conv 1 --valid true
 * **Train Continuation**: *(whole train data, continue from previous training)* - python mnist.py --conv 1 --train_cont true
 * **Testing**: python mnist.py --conv 1 --test true
+
+^^^^^^^^^^^^^
+Learning Rate
+^^^^^^^^^^^^^
+
+First learning rate is set to ``0.01``. Then it is halved at epoch ``5`` for training of ``50000`` shuffled data. With least error for validation, it is retrained with the pretrained weights. But this time the starting learning rate is ``0.001``, it is halved at epoch ``5``.
+
+------
 
 The architecture presented in paper is as follows:
 ``conv -> maxpool -> conv -> maxpool -> conv -> maxpool -> MLP -> softmax``.
