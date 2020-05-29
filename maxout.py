@@ -29,6 +29,26 @@ class MaxoutMLP(torch.nn.Module):
         :param linear_neurons: number of neurons in each linear
                                layer before max operation
         :type linear_neurons: :py:obj:`int`
+
+        :Example:
+
+        >>> from time import time
+        >>> import torch
+        >>> def fun(times):
+        ...     s = time()
+        ...     for i in range(times):
+        ...             torch.nn.Linear(784, 2048)(torch.randn(10, 784))
+        ...     print(time() - s)
+        ...
+        >>> fun(100)
+        1.0891399383544922
+        >>> def fun1(times):
+        ...     s = time()
+        ...     torch.nn.Linear(784, 2048 * times)(torch.randn(10, 784))
+        ...     print(time() - s)
+        ...
+        >>> fun1(100)
+        1.425891399383545
         """
         super(MaxoutMLP, self).__init__()
 
